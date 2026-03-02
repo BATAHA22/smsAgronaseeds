@@ -16,9 +16,49 @@ interface Customer {
 }
 
 const MESSAGE_TEMPLATES = [
-  { label: 'طردك في الولاية', value: 'طردك في الولاية' },
-  { label: 'طردك في مركز الشحن', value: 'طردك في مركز الشحن' },
-  { label: 'طردك في المكتب', value: 'طردك في المكتب' },
+  { 
+    label: 'رفض الاستلام', 
+    value: `السلام عليكم [المستلم]،
+نستفسر فقط عن سبب طلبكم لمنتج أقرونا للبذور ثم رفض استلامه بعد وصوله، خاصة وأنه تم تحضيره وشحنه خصيصًا لكم.
+إذا كان هناك أي ملاحظة أو تردد، يسعدنا توضيحه ومساعدتكم.
+بانتظار ردكم، وشكرًا لتفهمكم.
+
+أقرونا للبذور 🌱` 
+  },
+  { 
+    label: 'تم الشحن (صباحًا)', 
+    value: `مرحبا [المستلم]،
+تم شحن طلبيتك، وستصلك اليوم صباحًا بإذن الله 🌱
+يرجى الاستعداد لاستلامها والرد على اتصال الموزع عند تواصله معكم لضمان التسليم في الوقت المناسب.
+شكراً لثقتكم في أقرونا للبذور
+وصحا فطوركم 🌙✨` 
+  },
+  { 
+    label: 'تم الشحن (أندرسون)', 
+    value: `مرحبا [المستلم]،
+تم شحن طلبيتك، وستصل صباحًا بإذن الله 🌱
+
+يرجى انتظار اتصال شركة أندرسون أولاً، ثم التوجه إلى المكتب لاستلام الطرد بعد تواصلهم معكم.
+الرجاء الرد على الاتصال لضمان عدم إرجاع الشحنة.
+
+شكراً لثقتكم في أقرونا للبذور
+وصحا فطوركم 🌙✨` 
+  },
+  { 
+    label: 'وصول الطلبية (بذور السدر)', 
+    value: `مرحبا [المستلم]،
+نحيطكم علمًا أن طلبية بذور السدر من أقرونا للبذور قد وصلت، والموزّع يحاول الاتصال بكم من أجل تسليمها.
+نرجو منكم الردّ عليه في أقرب وقت لتأكيد الاستلام وتفادي إرجاع الطلبية.
+شكرًا لتعاونكم وثقتكم بنا 🌿
+أقرونا للبذور` 
+  },
+  { 
+    label: 'Agrona Farm شحن', 
+    value: `لقد قمنا بشحن طلبيتك [المستلم]، وستصلك صباحًا بإذن الله.
+نرجو منكم الاستعداد لاستلامها والردّ على اتصال الموزّع عند تواصله معكم.
+شكرًا لثقتكم بنا 🌱
+Agrona Farm` 
+  },
 ]
 
 const SENDER_OPTIONS = [
@@ -28,7 +68,7 @@ const SENDER_OPTIONS = [
 
 export default function DashboardPage() {
   const [customers, setCustomers] = useState<Customer[]>([])
-  const [messageTemplate, setMessageTemplate] = useState('مرحبا [المستلم]، طردك في الولاية')
+  const [messageTemplate, setMessageTemplate] = useState(MESSAGE_TEMPLATES[1].value)
   const [availableColumns, setAvailableColumns] = useState<string[]>([])
   const [isProcessing, setIsProcessing] = useState(false)
   const [senderPhone, setSenderPhone] = useState(SENDER_OPTIONS[0].value)
@@ -495,6 +535,9 @@ export default function DashboardPage() {
                     <th scope="col" className="px-3 py-4 text-right text-xs font-semibold text-gray-500 uppercase tracking-wider">
                       الحالة
                     </th>
+                    <th scope="col" className="relative py-3.5 pl-3 pr-4 sm:pr-6">
+                      <span className="sr-only">حذف</span>
+                    </th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-gray-100 dark:divide-zinc-800 bg-white dark:bg-zinc-900">
@@ -533,6 +576,17 @@ export default function DashboardPage() {
                             فشل
                           </span>
                         )}
+                      </td>
+                      <td className="relative whitespace-nowrap py-4 pl-3 pr-4 text-right text-sm font-medium sm:pr-6">
+                        <button
+                          onClick={() => {
+                            setCustomers(prev => prev.filter(c => c.id !== customer.id))
+                          }}
+                          className="text-gray-400 hover:text-red-600 transition-colors"
+                        >
+                          <Trash2 className="h-4 w-4" />
+                          <span className="sr-only">حذف {customer.name}</span>
+                        </button>
                       </td>
                     </tr>
                   ))}
