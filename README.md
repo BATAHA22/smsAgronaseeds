@@ -1,36 +1,74 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# YarobSMS - Professional SMS Campaign Manager
 
-## Getting Started
+A modern, high-performance SMS management dashboard built with Next.js 15, designed for efficient bulk messaging with dynamic variable support and AI-powered content enhancement.
 
-First, run the development server:
+## 🚀 Features
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+- **Bulk SMS Sending**: Upload Excel files (.xlsx) to send messages to thousands of customers instantly.
+- **Dynamic Variables**: personalized messages using column data (e.g., `[Name]`, `[Product]`, `[City]`).
+- **AI-Powered Enhancement**: Integrate with Mistral AI to rewrite and optimize message content for better engagement.
+- **Smart Message Editor**: Advanced editor with syntax highlighting for variables and real-time character counting.
+- **Multi-Sender Support**: Toggle between different sender IDs (e.g., AgronaSeeds, AgronaFarm) with ease.
+- **Secure Authentication**: Password-protected dashboard with session management.
+- **Responsive Design**: Fully responsive UI built with Tailwind CSS and a modern glassmorphism aesthetic.
+- **Arabic First**: optimized for RTL (Right-to-Left) interfaces and Arabic content.
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## 🛠️ Tech Stack
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+- **Framework**: [Next.js 15](https://nextjs.org/) (App Router)
+- **Styling**: [Tailwind CSS](https://tailwindcss.com/)
+- **Icons**: [Lucide React](https://lucide.dev/)
+- **SMS Provider**: [httpsms](https://httpsms.com/)
+- **AI Integration**: [Mistral AI](https://mistral.ai/)
+- **File Handling**: [SheetJS (xlsx)](https://sheetjs.com/)
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## ⚡ Getting Started
 
-## Learn More
+### Prerequisites
 
-To learn more about Next.js, take a look at the following resources:
+- Node.js 18+ installed.
+- API Keys for httpsms and Mistral AI.
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+### Installation
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+1. **Clone the repository:**
+   ```bash
+   git clone <repository-url>
+   cd yarobsms
+   ```
 
-## Deploy on Vercel
+2. **Install dependencies:**
+   ```bash
+   npm install
+   ```
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+3. **Configure Environment Variables:**
+   Create a `.env` file in the root directory:
+   ```env
+   APP_PASSWORD="your_secure_password"
+   HTTPSMS_API_KEY="your_httpsms_api_key"
+   Mistral="your_mistral_api_key"
+   ```
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+4. **Run the development server:**
+   ```bash
+   npm run dev
+   ```
+
+5. **Open the dashboard:**
+   Navigate to [http://localhost:3000](http://localhost:3000).
+
+## 📖 Usage Guide
+
+1. **Login**: Enter the configured `APP_PASSWORD` to access the dashboard.
+2. **Import Data**: Upload an Excel file containing at least `المستلم` (Name) and `الهاتف` (Phone) columns.
+3. **Compose Message**:
+   - Write your message in the editor.
+   - Click variable chips (e.g., `[الولاية]`) to insert dynamic data.
+   - Use the **AI Enhance** button to polish your text.
+4. **Select Sender**: Choose the appropriate sender ID.
+5. **Send**: Click "Send to All" to dispatch messages. You can monitor the progress in real-time.
+
+## 📄 License
+
+This project is proprietary and confidential.
