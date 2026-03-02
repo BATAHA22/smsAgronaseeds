@@ -1,6 +1,6 @@
 'use client'
 
-import { useRef, useEffect } from 'react'
+import { useRef } from 'react'
 import { cn } from '@/lib/utils'
 import { X } from 'lucide-react'
 
@@ -20,41 +20,6 @@ export function MessageEditor({ value, onChange, placeholder, className }: Messa
     if (backdropRef.current && textareaRef.current) {
       backdropRef.current.scrollTop = textareaRef.current.scrollTop
     }
-  }
-
-  const handleDeleteVariable = (variable: string) => {
-    // Replace the first occurrence of the variable with empty string
-    // Or replace all? Usually deleting a chip means deleting that specific instance.
-    // However, since we are rendering from a string, we need to be careful.
-    // A simple approach: Replace the first match of that variable in the string.
-    // BUT: The user clicks a specific chip. We don't know WHICH index it is easily from here without more complex logic.
-    // Alternative: Just replace the text in the textarea.
-    
-    // Better UX: Since we can't easily map the click on the backdrop to the exact cursor position in the raw string
-    // (because of duplicates), we will implement a "Delete All" or just replace the first one?
-    // Let's try to replace the first occurrence for now or Regex replace all?
-    // Replacing all might be annoying if user wants to keep others.
-    
-    // Let's implement a replacement that tries to be smart, but for now, replace ALL instances of this specific variable tag
-    // to be consistent, or maybe just let the user delete it manually with backspace.
-    
-    // Wait, the requirement is "give ability to delete via X icon".
-    // If I click X on [المستلم], it should remove THAT [المستلم].
-    // Since the backdrop is `pointer-events-none`, we can't click it!
-    // We need to make the chips interactive.
-    
-    // Enabling pointer-events on chips only:
-    const newValue = value.replace(variable, '') // This removes the FIRST occurrence only? No, string.replace only replaces first.
-    // But which one did they click?
-    // We can't know easily.
-    
-    // PROPOSAL: Since syncing click on a specific chip to the text index is hard without a full lexical parser,
-    // I will simply remove the variable string from the text.
-    // If there are multiple, this removes the first one found.
-    // This is a trade-off. To do it perfectly, we need a contenteditable div instead of textarea+backdrop.
-    
-    onChange(newValue)
-    textareaRef.current?.focus()
   }
 
   // Highlight logic for [variables]

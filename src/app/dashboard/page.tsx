@@ -2,7 +2,7 @@
 
 import { useState, useRef } from 'react'
 import * as XLSX from 'xlsx'
-import { Send, FileSpreadsheet, CheckCircle2, XCircle, Leaf, Tractor, UserPlus, Sparkles, Trash2 } from 'lucide-react'
+import { Send, FileSpreadsheet, CheckCircle2, XCircle, Leaf, Tractor, UserPlus, Sparkles, Trash2, Home, Building2, MessageSquare } from 'lucide-react'
 import { Toaster, toast } from 'sonner'
 import { cn } from '@/lib/utils'
 import { MessageEditor } from '@/components/message-editor'
@@ -93,6 +93,29 @@ export default function DashboardPage() {
       return `+${cleanPhone}`
     }
     return cleanPhone
+  }
+
+  const getShippingIcon = (serviceType: string | undefined) => {
+    if (!serviceType) return null
+    const type = serviceType.toLowerCase().trim()
+    
+    if (type.includes('domicile') || type.includes('home')) {
+      return (
+        <span title="توصيل للمنزل" className="inline-flex p-1 rounded-md bg-blue-50 text-blue-600">
+          <Home className="h-4 w-4" />
+        </span>
+      )
+    }
+    
+    if (type.includes('stop') || type.includes('desk') || type.includes('bureau') || type.includes('office')) {
+      return (
+        <span title="استلام من المكتب" className="inline-flex p-1 rounded-md bg-orange-50 text-orange-600">
+          <Building2 className="h-4 w-4" />
+        </span>
+      )
+    }
+    
+    return null
   }
 
   const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -451,14 +474,20 @@ export default function DashboardPage() {
               
               <div className="pt-4 border-t border-gray-100 dark:border-zinc-800">
                 <p className="text-xs font-medium text-gray-500 mb-2">قوالب جاهزة:</p>
-                <div className="flex flex-wrap gap-2">
+                <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
                    {MESSAGE_TEMPLATES.map(t => (
                      <button
                         key={t.value}
-                        onClick={() => setMessageTemplate(`مرحبا [المستلم]، ${t.value}`)}
-                        className="inline-flex items-center rounded-lg bg-gray-100 px-3 py-1.5 text-xs text-gray-700 hover:bg-gray-200 transition-colors"
+                        onClick={() => setMessageTemplate(t.value)}
+                        className="group relative flex flex-col items-start gap-1 p-2 rounded-xl border border-gray-100 dark:border-zinc-700 bg-gray-50/50 dark:bg-zinc-800/50 hover:bg-white dark:hover:bg-zinc-800 hover:border-blue-200 dark:hover:border-blue-800 hover:shadow-sm transition-all text-right"
                      >
-                       {t.label}
+                       <span className="flex items-center gap-1.5 text-xs font-semibold text-gray-900 dark:text-white group-hover:text-blue-600 dark:group-hover:text-blue-400">
+                         <MessageSquare className="h-3 w-3" />
+                         {t.label}
+                       </span>
+                       <span className="text-[10px] text-gray-500 dark:text-gray-400 line-clamp-2 w-full">
+                         {t.value}
+                       </span>
                      </button>
                    ))}
                 </div>
@@ -524,7 +553,7 @@ export default function DashboardPage() {
                       المستلم
                     </th>
                     <th scope="col" className="px-3 py-4 text-right text-xs font-semibold text-gray-500 uppercase tracking-wider">
-                      الهاتف
+                      رقم الهاتف
                     </th>
                     {/* Dynamic Headers (First 3 extra cols) */}
                     {availableColumns.filter(c => c !== 'المستلم' && c !== 'الهاتف').slice(0, 3).map(col => (
@@ -547,7 +576,10 @@ export default function DashboardPage() {
                         {idx + 1}
                       </td>
                       <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-700 dark:text-gray-300">
-                        {customer.name}
+                        <div className="flex items-center gap-2">
+                          {customer.name}
+                          {getShippingIcon(customer.data['نوع الخدمة'] || customer.data['Service Type'] || customer.data['Type'])}
+                        </div>
                       </td>
                       <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-500 font-mono text-xs" dir="ltr">
                         {customer.phone}
