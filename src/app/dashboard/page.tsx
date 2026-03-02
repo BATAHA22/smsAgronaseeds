@@ -1,8 +1,8 @@
 'use client'
 
-import { useState, useRef } from 'react'
+import { useState, useRef, useMemo } from 'react'
 import * as XLSX from 'xlsx'
-import { Send, FileSpreadsheet, CheckCircle2, XCircle, Leaf, Tractor, UserPlus, Sparkles, Trash2, Home, Building2, MessageSquare } from 'lucide-react'
+import { Send, FileSpreadsheet, CheckCircle2, XCircle, Leaf, Tractor, UserPlus, Sparkles, Trash2, Home, Building2, MessageSquare, Calculator, Smartphone } from 'lucide-react'
 import { Toaster, toast } from 'sonner'
 import { cn } from '@/lib/utils'
 import { MessageEditor } from '@/components/message-editor'
@@ -116,6 +116,85 @@ export default function DashboardPage() {
     }
     
     return null
+  }
+
+  const messageEditorRef = useRef<HTMLTextAreaElement>(null)
+
+  const stats = useMemo(() => {
+    let mobilis = 0
+    let djezzy = 0
+    let ooredoo = 0
+    let office = 0
+    let home = 0
+    
+    // Calculate message cost per unit
+    // 1-160 chars = 7 DA, 161+ chars = 14 DA (assuming max 320 for simplicity, or 7 per segment)
+    // The prompt says: "160 char 7DA, 161 char 14DA". This implies a step function.
+    const msgLen = messageTemplate.length
+    const unitCost = msgLen <= 160 ? 7 : 14
+
+    customers.forEach(c => {
+      // Normalize phone
+      let p = c.phone.replace(/\s/g, '').replace(/-/g, '')
+      if (p.startsWith('+213')) p = '0' + p.substring(4)
+      
+      if (p.startsWith('06')) {
+        mobilis++
+        // Mobilis is free
+      } else if (p.startsWith('07')) {
+        djezzy++
+      } else if (p.startsWith('05')) {
+        ooredoo++
+      }
+
+      // Office/Home logic
+      const type = (c.data['نوع الخدمة'] || c.data['Service Type'] || c.data['Type'] || '').toLowerCase().trim()
+      if (type.includes('domicile') || type.includes('home')) {
+        home++
+      } else if (type.includes('stop') || type.includes('desk') || type.includes('bureau') || type.includes('office')) {
+        office++
+      }
+    })
+
+    const totalCost = (djezzy + ooredoo) * unitCost
+    
+    return { mobilis, djezzy, ooredoo, office, home, totalCost, unitCost }
+  }, [customers, messageTemplate])
+
+  const handleDeleteGroup = (type: 'office' | 'home') => {
+    if (!confirm('هل أنت متأكد من حذف هذه المجموعة؟')) return
+    
+    setCustomers(prev => prev.filter(c => {
+      const t = (c.data['نوع الخدمة'] || c.data['Service Type'] || c.data['Type'] || '').toLowerCase().trim()
+      if (type === 'home' && (t.includes('domicile') || t.includes('home'))) return false
+      if (type === 'office' && (t.includes('stop') || t.includes('desk') || t.includes('bureau') || t.includes('office'))) return false
+      return true
+    }))
+    toast.success('تم حذف المجموعة بنجاح')
+  }
+
+  const insertVariable = (col: string) => {
+    const textarea = messageEditorRef.current
+    const insertion = ` [${col}]`
+    
+    if (!textarea) {
+      setMessageTemplate(prev => prev + insertion)
+      return
+    }
+    
+    const start = textarea.selectionStart
+    const end = textarea.selectionEnd
+    const text = messageTemplate
+    
+    const newText = text.substring(0, start) + insertion + text.substring(end)
+    setMessageTemplate(newText)
+    
+    // Restore cursor position and focus
+    setTimeout(() => {
+      textarea.focus()
+      const newCursorPos = start + insertion.length
+      textarea.setSelectionRange(newCursorPos, newCursorPos)
+    }, 0)
   }
 
   const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -441,6 +520,7 @@ export default function DashboardPage() {
             <div className="space-y-4">
               <div>
                 <MessageEditor
+                  ref={messageEditorRef}
                   value={messageTemplate}
                   onChange={setMessageTemplate}
                   placeholder="اكتب نص الرسالة هنا..."
@@ -460,7 +540,7 @@ export default function DashboardPage() {
                     availableColumns.map((col) => (
                       <button
                         key={col}
-                        onClick={() => setMessageTemplate(prev => prev + ` [${col}]`)}
+                        onClick={() => insertVariable(col)}
                         className="inline-flex items-center rounded-lg bg-blue-50 px-2.5 py-1.5 text-xs font-medium text-blue-700 hover:bg-blue-100 transition-colors border border-blue-100"
                       >
                         {col} +
@@ -498,7 +578,50 @@ export default function DashboardPage() {
 
         {/* Bottom Section: Results Table */}
         <div className="bg-white dark:bg-zinc-900 rounded-2xl shadow-sm border border-gray-100 dark:border-zinc-800 overflow-hidden">
-          <div className="px-6 py-5 border-b border-gray-100 dark:border-zinc-800 flex justify-between items-center bg-gray-50/50 dark:bg-zinc-800/20">
+          {/* Stats Bar */}
+          {customers.length > 0 && (
+             <div className="grid grid-cols-2 md:grid-cols-4 gap-4 p-4 border-b border-gray-100 dark:border-zinc-800 bg-gray-50/30">
+                <div className="flex items-center gap-3 p-3 rounded-xl bg-blue-50/50 border border-blue-100">
+                   <div className="p-2 bg-blue-100 text-blue-600 rounded-lg">
+                     <Smartphone className="h-4 w-4" />
+                   </div>
+                   <div>
+                     <p className="text-xs text-gray-500">موبيليس (06)</p>
+                     <p className="text-lg font-bold text-gray-900">{stats.mobilis}</p>
+                   </div>
+                </div>
+                <div className="flex items-center gap-3 p-3 rounded-xl bg-red-50/50 border border-red-100">
+                   <div className="p-2 bg-red-100 text-red-600 rounded-lg">
+                     <Smartphone className="h-4 w-4" />
+                   </div>
+                   <div>
+                     <p className="text-xs text-gray-500">أوريدو (05)</p>
+                     <p className="text-lg font-bold text-gray-900">{stats.ooredoo}</p>
+                   </div>
+                </div>
+                <div className="flex items-center gap-3 p-3 rounded-xl bg-orange-50/50 border border-orange-100">
+                   <div className="p-2 bg-orange-100 text-orange-600 rounded-lg">
+                     <Smartphone className="h-4 w-4" />
+                   </div>
+                   <div>
+                     <p className="text-xs text-gray-500">جيزي (07)</p>
+                     <p className="text-lg font-bold text-gray-900">{stats.djezzy}</p>
+                   </div>
+                </div>
+                <div className="flex items-center gap-3 p-3 rounded-xl bg-emerald-50/50 border border-emerald-100">
+                   <div className="p-2 bg-emerald-100 text-emerald-600 rounded-lg">
+                     <Calculator className="h-4 w-4" />
+                   </div>
+                   <div>
+                     <p className="text-xs text-gray-500">التكلفة التقديرية</p>
+                     <p className="text-lg font-bold text-gray-900">{stats.totalCost} دج</p>
+                     <p className="text-[10px] text-gray-400">({stats.unitCost} دج/رسالة)</p>
+                   </div>
+                </div>
+             </div>
+          )}
+
+          <div className="px-6 py-5 border-b border-gray-100 dark:border-zinc-800 flex flex-wrap gap-4 justify-between items-center bg-gray-50/50 dark:bg-zinc-800/20">
             <div className="flex items-center gap-3">
               <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
                 قائمة العملاء
@@ -507,6 +630,31 @@ export default function DashboardPage() {
                 {customers.length} عميل
               </span>
             </div>
+
+            {/* Bulk Actions */}
+             {customers.length > 0 && (
+               <div className="flex items-center gap-2">
+                 {stats.office > 0 && (
+                   <button
+                     onClick={() => handleDeleteGroup('office')}
+                     className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium bg-orange-50 text-orange-700 hover:bg-orange-100 border border-orange-200 transition-colors"
+                   >
+                     <Trash2 className="h-3 w-3" />
+                     حذف المكتب ({stats.office})
+                   </button>
+                 )}
+                 {stats.home > 0 && (
+                   <button
+                     onClick={() => handleDeleteGroup('home')}
+                     className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium bg-blue-50 text-blue-700 hover:bg-blue-100 border border-blue-200 transition-colors"
+                   >
+                     <Trash2 className="h-3 w-3" />
+                     حذف المنزل ({stats.home})
+                   </button>
+                 )}
+               </div>
+             )}
+
             <div className="flex gap-2">
               <button 
                 onClick={() => setIsManualEntryOpen(true)}

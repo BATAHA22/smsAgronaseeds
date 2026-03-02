@@ -1,6 +1,6 @@
 'use client'
 
-import { useRef } from 'react'
+import { useRef, forwardRef, useImperativeHandle } from 'react'
 import { cn } from '@/lib/utils'
 import { X } from 'lucide-react'
 
@@ -11,14 +11,17 @@ interface MessageEditorProps {
   className?: string
 }
 
-export function MessageEditor({ value, onChange, placeholder, className }: MessageEditorProps) {
-  const textareaRef = useRef<HTMLTextAreaElement>(null)
+export const MessageEditor = forwardRef<HTMLTextAreaElement, MessageEditorProps>(({ value, onChange, placeholder, className }, ref) => {
+  const localRef = useRef<HTMLTextAreaElement>(null)
+  
+  useImperativeHandle(ref, () => localRef.current!)
+
   const backdropRef = useRef<HTMLDivElement>(null)
 
   // Sync scroll between textarea and backdrop
   const handleScroll = () => {
-    if (backdropRef.current && textareaRef.current) {
-      backdropRef.current.scrollTop = textareaRef.current.scrollTop
+    if (backdropRef.current && localRef.current) {
+      backdropRef.current.scrollTop = localRef.current.scrollTop
     }
   }
 
@@ -95,32 +98,18 @@ export function MessageEditor({ value, onChange, placeholder, className }: Messa
 
       {/* Actual Textarea */}
       <textarea
-        ref={textareaRef}
+        ref={localRef}
         value={value}
         onChange={(e) => onChange(e.target.value)}
         onScroll={handleScroll}
-        className="relative block w-full rounded-xl border-0 bg-transparent p-4 text-gray-900 dark:text-white placeholder:text-gray-400 focus:ring-0 transition-shadow sm:text-sm resize-none z-0 leading-6"
         placeholder={placeholder}
-        rows={5}
-        spellCheck={false}
+        className="relative w-full h-40 p-4 bg-transparent border-none focus:ring-0 text-sm text-transparent caret-gray-900 dark:caret-white resize-none z-20 whitespace-pre-wrap break-words overflow-auto"
         style={{
-            color: 'transparent',
-            caretColor: 'var(--foreground)', 
-            lineHeight: '1.5rem'
+          lineHeight: '1.5rem'
         }}
       />
-      
-      {/* Fallback caret color fix for Tailwind v4 if var not set */}
-      <style jsx>{`
-        textarea {
-          caret-color: #000;
-        }
-        @media (prefers-color-scheme: dark) {
-          textarea {
-            caret-color: #fff;
-          }
-        }
-      `}</style>
     </div>
   )
-}
+})
+
+MessageEditor.displayName = 'MessageEditor'
